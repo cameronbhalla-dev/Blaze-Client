@@ -1,0 +1,40 @@
+name: Build macOS DMG
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'blaze-client/**'
+      - '.github/workflows/build-macos.yml'
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: blaze-client
+        run: npm install
+
+      - name: Build universal macOS DMG
+        working-directory: blaze-client
+        run: npm run dist:mac
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: Blaze-Client-macOS-Universal
+          path: blaze-client/dist/*.dmg
+          if-no-files-found: error
